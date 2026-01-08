@@ -40,19 +40,25 @@ L'application sera disponible sur `http://localhost:3000`
 
 ## ⚙️ Configuration
 
-Avant d'utiliser l'application, vous devez configurer votre clé API Google Gemini :
+Avant d'utiliser l'application, configurez votre clé API Google Gemini :
 
-1. Ouvrez le fichier `src/App.js`
-2. Remplacez la ligne `const apiKey = "";` par votre clé API :
-```javascript
-const apiKey = "VOTRE_CLÉ_API_GEMINI";
+1. Créez un fichier `.env` à la racine du projet :
+```bash
+cp .env.example .env
+```
+
+2. Éditez le fichier `.env` et ajoutez votre clé API :
+```
+VITE_GEMINI_API_KEY=votre_clé_api_ici
 ```
 
 Pour obtenir une clé API :
 - Visitez [Google AI Studio](https://makersuite.google.com/app/apikey)
 - Créez un compte ou connectez-vous
 - Générez une nouvelle clé API
-- Copiez-la dans votre fichier
+- Copiez-la dans votre fichier `.env`
+
+**Important** : Le fichier `.env` est déjà dans `.gitignore` pour protéger votre clé API.
 
 ## 🎯 Utilisation
 
@@ -69,9 +75,10 @@ labonneannonce/
 ├── public/
 │   └── index.html          # Page HTML principale
 ├── src/
-│   ├── App.js             # Composant principal React
+│   ├── App.jsx            # Composant principal React
 │   ├── App.css            # Styles CSS et Tailwind
 │   └── index.js           # Point d'entrée React
+├── .env.example           # Exemple de configuration
 ├── package.json           # Dépendances et scripts
 ├── vite.config.js         # Configuration Vite
 ├── tailwind.config.js     # Configuration Tailwind CSS
@@ -87,6 +94,8 @@ npm run build
 ```
 
 Les fichiers de production seront générés dans le dossier `dist/`.
+
+**Note** : Vite expose uniquement les variables d'environnement commençant par `VITE_` au code client. Assurez-vous de configurer la variable `VITE_GEMINI_API_KEY` dans votre environnement de production.
 
 ## 🤝 Contribuer
 
