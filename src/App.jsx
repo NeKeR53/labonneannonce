@@ -47,6 +47,14 @@ const App = () => {
   const [error, setError] = useState(null);
   const [step, setStep] = useState(1);
 
+  useEffect(() => {
+    console.log("[Gemini API Key Check]");
+    console.log("VITE_GEMINI_API_KEY existe?", !!import.meta.env.VITE_GEMINI_API_KEY);
+    console.log("Clé API chargée:", apiKey ? `${apiKey.substring(0, 8)}...` : "NON DÉFINIE");
+    console.log("TEXT_MODEL:", TEXT_MODEL);
+    console.log("IMAGE_MODEL:", IMAGE_MODEL);
+  }, []);
+
   // Modals & Interactivité
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [customPromptText, setCustomPromptText] = useState("");
@@ -86,6 +94,8 @@ const App = () => {
     setLoading(true);
     setError(null);
     setProcessingStatus("Analyse de l'objet...");
+
+    console.log("[generateAd] Clé API utilisée:", apiKey ? `${apiKey.substring(0, 8)}...` : "NON DÉFINIE");
 
     try {
       const textPrompt =
