@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
+  AlertCircle,
   Camera,
   Upload,
   RotateCw,
@@ -62,6 +63,34 @@ const App = () => {
   const [fullscreenImage, setFullscreenImage] = useState(null);
   const [copyFeedback, setCopyFeedback] = useState(null);
   const [textCopyFeedback, setTextCopyFeedback] = useState(null);
+  const [notification, setNotification] = useState(null);
+
+  const showNotification = (message, type = "error") => {
+    setNotification({ message, type });
+    setTimeout(() => setNotification(null), 6000);
+  };
+
+  const parseApiError = async (response) => {
+    try {
+      const data = await response.json();
+      const errorMsg = data?.error?.message || data?.error?.status || "";
+      if (errorMsg.includes("quota") || errorMsg.includes("RESOURCE_EXHAUSTED")) {
+        return { type: "quota", message: "Quota Gemini atteint. Réessayez plus tard ou vérifiez votre plan API." };
+      }
+      if (response.status === 401 || errorMsg.includes("API_KEY") || errorMsg.includes("permission")) {
+        return { type: "apikey", message: "Clé API invalide ou manquante. Vérifiez VITE_GEMINI_API_KEY." };
+      }
+      if (response.status === 429) {
+        return { type: "rate_limit", message: "Trop de requêtes. Patience..." };
+      }
+      if (response.status === 400) {
+        return { type: "bad_request", message: "Erreur de requête. L'image ou le prompt est peut-être trop volumineux." };
+      }
+      return { type: "unknown", message: errorMsg || `Erreur ${response.status}` };
+    } catch {
+      return { type: "unknown", message: `Erreur ${response.status}` };
+    }
+  };
 
   // Données de l'annonce
   const [adData, setAdData] = useState({
@@ -152,7 +181,19 @@ const App = () => {
       setGeneratedImages(images);
       setStep(2);
     } catch (err) {
-      setError("Erreur lors de la génération. Vérifiez votre connexion.");
+      console.error("[generateAd] Erreur:", err);
+      if (err.message?.includes("HTTP error")) {
+        const status = parseInt(err.message.match(/\d+/)?.[0] || "0");
+        if (status === 429) {
+          showNotification("Quota Gemini atteint. Réessayez plus tard.", "error");
+        } else if (status === 401 || status === 403) {
+          showNotification("Clé API invalide. Vérifiez VITE_GEMINI_API_KEY.", "error");
+        } else {
+          showNotification(`Erreur API: ${err.message}`, "error");
+        }
+      } else {
+        showNotification("Erreur lors de la génération. Vérifiez votre connexion.", "error");
+      }
     } finally {
       setLoading(false);
       setProcessingStatus("");
@@ -580,6 +621,28 @@ const App = () => {
           <p className="text-slate-500 font-medium mt-2 max-w-xs">
             {processingStatus}
           </p>
+        </div>
+      )}
+
+      {/* Notification */}
+      {notification && (
+        <div className="fixed bottom-6 right-6 z-[300] bg-white rounded-2xl shadow-xl border border-slate-100 p-4 max-w-sm animate-in slide-in-from-bottom-4">
+          <div className="flex items-start gap-3">
+            <div className={`p-2 rounded-full shrink-0 ${
+              notification.type === "error" ? "bg-red-100 text-red-600" : "bg-blue-100 text-blue-600"
+            }`}>
+              <AlertCircle size={20} />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-medium text-slate-800">{notification.message}</p>
+            </div>
+            <button
+              onClick={() => setNotification(null)}
+              className="text-slate-400 hover:text-slate-600 transition-colors shrink-0"
+            >
+              <X size={18} />
+            </button>
+          </div>
         </div>
       )}
     </div>
