@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "La Bonne Annonce - Créez vos annonces Leboncoin avec l'IA",
   "main": "src/index.js",
+  "type": "module",
   "scripts": {
     "start": "vite",
+    "server": "node server.js",
     "build": "vite build",
     "preview": "vite preview",
     "dev": "vite --host"
@@ -19,15 +21,19 @@
   "author": "La Bonne Annonce",
   "license": "MIT",
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "lucide-react": "^0.263.1",
+    "node-fetch": "^3.3.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "lucide-react": "^0.263.1"
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.0.3",
-    "vite": "^4.4.5",
-    "tailwindcss": "^3.3.3",
     "autoprefixer": "^10.4.14",
-    "postcss": "^8.4.27"
+    "postcss": "^8.4.27",
+    "tailwindcss": "^3.3.3",
+    "vite": "^4.4.5"
   }
 }

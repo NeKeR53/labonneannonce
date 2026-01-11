@@ -23,7 +23,6 @@ import {
 } from "lucide-react";
 import "./App.css";
 
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || "";
 const TEXT_MODEL = "gemini-2.5-flash-preview-09-2025";
 const IMAGE_MODEL = "gemini-2.5-flash-image-preview";
 
@@ -49,9 +48,6 @@ const App = () => {
   const [step, setStep] = useState(1);
 
   useEffect(() => {
-    console.log("[Gemini API Key Check]");
-    console.log("VITE_GEMINI_API_KEY existe?", !!import.meta.env.VITE_GEMINI_API_KEY);
-    console.log("Clé API chargée:", apiKey ? `${apiKey.substring(0, 8)}...` : "NON DÉFINIE");
     console.log("TEXT_MODEL:", TEXT_MODEL);
     console.log("IMAGE_MODEL:", IMAGE_MODEL);
   }, []);
@@ -124,29 +120,30 @@ const App = () => {
     setError(null);
     setProcessingStatus("Analyse de l'objet...");
 
-    console.log("[generateAd] Clé API utilisée:", apiKey ? `${apiKey.substring(0, 8)}...` : "NON DÉFINIE");
-
     try {
       const textPrompt =
         "Analyse cette image d'un objet pour Leboncoin. Génère : 1. Un titre accrocheur. 2. Une description détaillée. 3. Un prix suggéré. 4. Trois conseils courts pour vendre cet objet plus vite. Réponds en JSON : {title, description, price, tips: []}";
 
       const textResponse = await fetchWithRetry(
-        `https://generativelanguage.googleapis.com/v1beta/models/${TEXT_MODEL}:generateContent?key=${apiKey}`,
+        `/api/generate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  { text: textPrompt },
-                  {
-                    inlineData: { mimeType: "image/png", data: originalImage },
-                  },
-                ],
-              },
-            ],
-            generationConfig: { responseMimeType: "application/json" },
+            model: TEXT_MODEL,
+            data: {
+              contents: [
+                {
+                  parts: [
+                    { text: textPrompt },
+                    {
+                      inlineData: { mimeType: "image/png", data: originalImage },
+                    },
+                  ],
+                },
+              ],
+              generationConfig: { responseMimeType: "application/json" },
+            },
           }),
         },
       );
@@ -202,20 +199,23 @@ const App = () => {
 
   const generateImageVariation = async (base64, prompt) => {
     const response = await fetchWithRetry(
-      `https://generativelanguage.googleapis.com/v1beta/models/${IMAGE_MODEL}:generateContent?key=${apiKey}`,
+      `/api/generate`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { text: prompt },
-                { inlineData: { mimeType: "image/png", data: base64 } },
-              ],
-            },
-          ],
-          generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
+          model: IMAGE_MODEL,
+          data: {
+            contents: [
+              {
+                parts: [
+                  { text: prompt },
+                  { inlineData: { mimeType: "image/png", data: base64 } },
+                ],
+              },
+            ],
+            generationConfig: { responseModalities: ["TEXT", "IMAGE"] },
+          },
         }),
       },
     );
@@ -265,20 +265,23 @@ const App = () => {
     setProcessingStatus("Optimisation du texte...");
     try {
       const res = await fetchWithRetry(
-        `https://generativelanguage.googleapis.com/v1beta/models/${TEXT_MODEL}:generateContent?key=${apiKey}`,
+        `/api/generate`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [
-              {
-                parts: [
-                  {
-                    text: `Réécris cette description Leboncoin pour la rendre plus professionnelle et persuasive : ${adData.description}`,
-                  },
-                ],
-              },
-            ],
+            model: TEXT_MODEL,
+            data: {
+              contents: [
+                {
+                  parts: [
+                    {
+                      text: `Réécris cette description Leboncoin pour la rendre plus professionnelle et persuasive : ${adData.description}`,
+                    },
+                  ],
+                },
+              ],
+            },
           }),
         },
       );
